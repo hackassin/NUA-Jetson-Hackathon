@@ -1,14 +1,18 @@
 # --------------------------------------------------------
-# ~ Sample code reference taken from JK Jun ~  
+# Jetvengers HQ AI & IOT Integration
+# ~ Sample gstream integration code reference taken from JK Jung for ~  
 # Camera sample code for Tegra X2/X1
-#
+# (We tested 
 # This program could capture and display video from
 # IP CAM, USB webcam, or the Tegra onboard camera.
 # Refer to the following blog post for how to set up
 # and run the code:
 #   https://jkjung-avt.github.io/tx2-camera-with-python/
 #
-# Written by JK Jung <jkjung13@gmail.com>
+# Tegra Cam written by JK Jung <jkjung13@gmail.com>
+# Code customized by Amlan from Jetvengers HQ team
+# Modules added: preprocess_frame, displaytext, play_audio,
+# gpio_initialize, validate, door_activate
 # --------------------------------------------------------
 
 
@@ -143,6 +147,7 @@ def preprocess_frame(frame):
     x = x.to(device)
     x = x[None, ...]
     return x
+# To predict the input frame tensor
 def predict_image(tensor):
     output = model_trt(tensor)
     # output = F.log_softmax(output, dim=1)
@@ -162,6 +167,7 @@ def displaytxt(label, value, img, font):
     
     return img
 
+# Plays the voice message
 def play_audio(label):
     global prev_audio
     files = [f for f in listdir('audio/') if isfile(join('audio/', f))]
@@ -173,6 +179,7 @@ def play_audio(label):
     # prev_audio = audiolabel
     # time.sleep(1)
 
+# For sliding the door
 def door_activate():
     # initialize EnA, In1 and In2
     GPIO.setup(ENA, GPIO.OUT, initial=GPIO.LOW)
@@ -205,7 +212,8 @@ def door_activate():
     GPIO.output(IN1, GPIO.LOW)
     GPIO.output(IN2, GPIO.LOW)
     time.sleep(1)
-    
+
+# Validate input image for necessary action    
 def validate(label, value):
     global prev_label
     if (prev_label == label):
@@ -216,7 +224,8 @@ def validate(label, value):
     elif (value >= 60):
        play_audio(label)
        door_activate()
-       prev_label = label               
+       prev_label = label
+               
 def read_cam(cap):
     global counter, label, value
     # show_pred = True
@@ -240,7 +249,7 @@ def read_cam(cap):
         counter += 1
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
-
+# To initialize the Jetson GPIO pins
 def gpio_initialize():
     # set pin numbers to the board's
     GPIO.setmode(GPIO.BOARD)
